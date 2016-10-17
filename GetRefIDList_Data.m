@@ -1,4 +1,4 @@
-function [refIDlist , noFindList ] = GetRefIDList_Data(expName)
+function [refIDlist , noFindList ] = GetRefIDList_Data(expDATA)
 %GETREFIDLIST_DATA Extracts gene ID and Geo gene chip reference ID for
 %specificed Geo study with respect to User's list of genes of interest
 %
@@ -21,15 +21,21 @@ end
 
 geneUnique = unique(gene2);
 
-gseData = getgeodata(expName);
-gseGene = gseData.Identifier;
-gseIDref = gseData.IDRef;
-gseDATA = gseData.Data;
-gseRowNames = gseData.ColumnNames;
+gseData = load(expDATA);
+
+
+gseGene = gseData.GEOSOFTData.Identifier;
+gseIDref = gseData.GEOSOFTData.IDRef;
+
+
+% Clean up data
+gseDATA = gseData.GEOSOFTData.Data(:,3:68);
+
+gseRowNames = gseData.GEOSOFTData.ColumnNames(1:66);
 
 noFind = 0;
 noFindList = {};
-expData = nan(66,2000);
+expData = nan(size(gseDATA,2),2000);
 refIDnum = 1;
 refIDlist = cell(2000,2);
 
@@ -59,7 +65,7 @@ for gi = 1:length(geneUnique)
             else
                 refIDlist{refIDnum,2} = gseIDs{gsI};
                 
-                expData(:,refIDnum) = transpose(gseDATA(gseDind(gsI),:));
+                expData(:,refIDnum) = cell2mat(transpose(gseDATA(gseDind(gsI),:)));
                 
                 refIDnum = refIDnum + 1;
             end
@@ -77,7 +83,7 @@ for gi = 1:length(geneUnique)
             refIDlist{refIDnum,1} = geneFind;
             refIDlist{refIDnum,2} = tgse;
             
-            expData(:,refIDnum) = transpose(gseDATA(gseDind,:));
+            expData(:,refIDnum) = cell2mat(transpose(gseDATA(gseDind,:)));
             
             refIDnum = refIDnum + 1;
             
@@ -86,7 +92,7 @@ for gi = 1:length(geneUnique)
             refIDlist{refIDnum,1} = geneFind;
             refIDlist{refIDnum,2} = gseID;
             
-            expData(:,refIDnum) = transpose(gseDATA(gseDind,:));
+            expData(:,refIDnum) = cell2mat(transpose(gseDATA(gseDind,:)));
             
             refIDnum = refIDnum + 1;
         end
@@ -126,7 +132,7 @@ end
 
 outCellarray = [['RefID';'Gene';gseRowNames] , [ transpose(refIDlist(:,2)) ; transpose(refIDlist(:,1)) ; num2cell(expData)]];
 
-filename = [expName , '_Exp.xlsx'];
+filename = [expDATA , '_Exp.xlsx'];
 
 xlswrite(filename,outCellarray)
 
