@@ -34,19 +34,20 @@ gseDATA = gseData.GEOSOFTData.Data(:,3:68);
 gseRowNames = gseData.GEOSOFTData.ColumnNames(1:66);
 
 noFind = 0;
-noFindList = {};
+noFindList = cell(2000,1);
 expData = nan(size(gseDATA,2),2000);
 refIDnum = 1;
 refIDlist = cell(2000,2);
 
 for gi = 1:length(geneUnique)
     geneFind = geneUnique{gi};
-    gseIND = ismember(gseGene,geneFind);
+%     gseIND = ismember(gseGene,geneFind);
+    gseIND = cellfun(@(x) ~isempty(strfind(x,geneFind)),gseGene,'UniformOutput',true);
     gseDind = find(gseIND);
     
     if sum(gseIND) == 0;
         noFind = noFind + 1;
-        noFindList{noFind} = geneFind;
+        noFindList{noFind,1} = geneFind;
     elseif sum(gseIND) > 1;
         
         gseIDs = gseIDref(gseIND);
@@ -138,14 +139,6 @@ xlswrite(filename,outCellarray)
 
 
 end
-
-
-
-
-
-
-
-
 
 
 
